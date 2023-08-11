@@ -391,6 +391,10 @@ QVariant Vehicle:: getRpm4()
 {
     return _escStatusFactGroup.rpmFourth()->rawValue();
 }
+QVariant Vehicle:: getCog()
+{
+    return _gpsFactGroup.courseOverGround()->rawValue();
+}
 //CUSTOM
 void Vehicle::trackFirmwareVehicleTypeChanges(void)
 {
