@@ -114,6 +114,7 @@ FlightMap {
 
     property int first: 1
 
+    property real cog: _activeVehicle ? _activeVehicle.getCog() : 0
 
     Timer {
         id:         update_custo
@@ -121,6 +122,7 @@ FlightMap {
         running:    true
         repeat: true
         onTriggered: {
+            cog                =    _activeVehicle ? _activeVehicle.getCog() : 0
 
             error_bar_max      =    paramController.getValue('Rerror_color_maximum')
             rpm_color_low_min  =    paramController.getValue('RPM_color_low_min')
@@ -911,6 +913,18 @@ FlightMap {
                 return heading.toFixed(0) + '';
             }
         }
+        function getCogDisplay(){
+            if(cog.toFixed(0) > 9 && cog.toFixed(0) < 100){
+                return '0' + cog.toFixed(0);
+            }
+
+            else if(cog.toFixed(0) < 10){
+                return '00' + cog.toFixed(0);
+            }
+            else{
+                return cog.toFixed(0) + '';
+            }
+        }
         function getTravelHeadingDisplay(){
 
             return getHeadingDisplay();
@@ -1323,7 +1337,7 @@ FlightMap {
                 anchors.bottom: _travelDirectionIndicator_anchors.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
-                text: _activeVehicle ? _activeVehicle.getCog() + '°' : '--.--'
+                text: _activeVehicle ? drone.getCogDisplay() + '°' : '--.--'
                 font.pointSize: 8
             }
             Text {
