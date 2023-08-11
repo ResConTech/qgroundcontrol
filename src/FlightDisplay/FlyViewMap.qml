@@ -90,8 +90,11 @@ FlightMap {
     property bool _minmaxDisp: paramController.getValue('minmax')
 
     property FactGroup weatherFactGroup: paramController.vehicle.getFactGroup("wind")
-    property Fact windDirection: weatherFactGroup.getFact("direction")
-    property Fact windSpeed: weatherFactGroup.getFact("speed")
+    property Fact windDirectionFact: weatherFactGroup.getFact("direction")
+    property Fact windSpeedFact: weatherFactGroup.getFact("speed")
+
+    property real windDirection: 0
+    property real windSpeed: 0
 
     property int top_left_val: 0
     property int top_left_min
@@ -155,10 +158,39 @@ FlightMap {
             batt_mid           =    paramController.getValue('batt_mid')
 
             if(_activeVehicle){
-                top_left_val       = _activeVehicle.pwm3.value               //_activeVehicle.servoRaw3.value
-                top_right_val      = _activeVehicle.pwm1.value               //_activeVehicle.servoRaw.value
-                bottom_left_val    = _activeVehicle.pwm2.value               //_activeVehicle.servoRaw2.value
-                bottom_right_val   = _activeVehicle.pwm4.value               //_activeVehicle.servoRaw4.value
+                //Update wind
+                if(_activeVehicle.getWindDirection().toString() === 'NaN'){
+                    windDirection = 0
+                }
+                else{
+                    windDirection      =     _activeVehicle.getWindDirection()
+                }
+                if(_activeVehicle.getWindSpeed().toString() === 'NaN'){
+                    windSpeed = 0
+                }
+                else{
+                    windSpeed          =     _activeVehicle.getWindSpeed()
+                }
+                //Live Flight
+                if(_activeVehicle.servoRaw.value < 1 || _activeVehicle.servoRaw2.value < 1 || _activeVehicle.servoRaw3.value < 1 || _activeVehicle.servoRaw4.value < 1){
+                    top_left_val       =     _activeVehicle.getRpm3()   //_activeVehicle.rpm3.rawValue.toFixed(0)
+                    top_right_val      =     _activeVehicle.getRpm1()   //_activeVehicle.rpm1.rawValue.toFixed(0)
+                    bottom_left_val    =     _activeVehicle.getRpm2()   //_activeVehicle.rpm2.rawValue.toFixed(0)
+                    bottom_right_val   =     _activeVehicle.getRpm4()   //_activeVehicle.rpm4.rawValue.toFixed(0)
+                }
+                //Simulated Flight
+                else if(0 < 1 || 0 < 1 || 0 < 1 || 0 < 1){
+                    top_left_val       =    _activeVehicle.servoRaw3.value
+                    top_right_val      =    _activeVehicle.servoRaw.value
+                    bottom_left_val    =    _activeVehicle.servoRaw2.value
+                    bottom_right_val   =    _activeVehicle.servoRaw4.value
+                }
+            }
+            else{
+                top_left_val       =    0
+                top_right_val      =    0
+                bottom_left_val    =    0
+                bottom_right_val   =    0
             }
 
             if(PreFlightBatteryCheck && _activeVehicle){
@@ -895,15 +927,15 @@ FlightMap {
 //                    }
         }
         function getWindHeadingDisplay(){
-            if(windDirection.rawValue.toFixed(0) > 9 && windDirection.rawValue.toFixed(0) < 100){
-                return '0' + windDirection.rawValue.toFixed(0);
+            if(windDirection.toFixed(0) > 9 && windDirection.toFixed(0) < 100){
+                return '0' + windDirection.toFixed(0);
             }
 
-            else if(windDirection.rawValue.toFixed(0) < 10){
-                return '00' + windDirection.rawValue.toFixed(0);
+            else if(windDirection.toFixed(0) < 10){
+                return '00' + windDirection.toFixed(0);
             }
             else{
-                return windDirection.rawValue.toFixed(0) + '';
+                return windDirection.toFixed(0) + '';
             }
         }
         Rectangle{
@@ -1222,8 +1254,16 @@ FlightMap {
                 return drone.groundSpeed.toFixed(1);
             }
         }
+        function _getWindSpeed(){
+            if(windSpeed >= 10){
+                return windSpeed.toFixed(0);
+            }
+            else{
+                return windSpeed.toFixed(1);
+            }
+        }
         function getWindIndicatorWidth(){
-                return 2 * (5 - drone.groundSpeed.toFixed(0));
+                return 2 * (5 - windSpeed.toFixed(0));
         }
         function getTravelIndicatorWidth(){
                 return 2 * (5 - drone.groundSpeed.toFixed(0));
@@ -1238,14 +1278,14 @@ FlightMap {
                 anchors.bottom: travelDirectionIndicator_anchors2.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
-                text: _activeVehicle ? drone.getHeadingDisplay() + '°' : '--.--'
+                text: _activeVehicle ? drone.getWindHeadingDisplay() + '°' : '--.--'
                 font.pointSize: 8
             }
             Text {
                 anchors.top: travelDirectionIndicator_anchors.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
-                text: _activeVehicle ? drone.getGroundSpeed() : ''
+                text: _activeVehicle ? drone._getWindSpeed() : ''
                 color: 'white'
                 font.pointSize: 10
                 font.bold: true
