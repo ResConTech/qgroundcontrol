@@ -895,8 +895,7 @@ FlightMap {
         property real headingToWP: _activeVehicle ? calculateTravelDirection() : 0
         property real groundSpeed: _activeVehicle ? _activeVehicle.groundSpeed.value : 0
         function calculateTravelDirection(){
-            //How to find??
-            return 0;
+            return _activeVehicle.headingToNextWP.rawValue
         }
 
         function getHeadingDisplay(){
@@ -1200,11 +1199,39 @@ FlightMap {
             visible: _windDisp
             z: 10
 
+            id: headingAnchorsStart
+            anchors.top: headingAnchors.top
+            anchors.topMargin: -5
+            anchors.horizontalCenter: drone.horizontalCenter
+            width: 1
+            height: 1
+            color: "transparent"
+            //border.color: "black"
+            //border.width: 1
+        }
+        Rectangle{
+            visible: _windDisp
+            z: 10
+
+            id: headingAnchorsEnd
+            anchors.bottom: headingAnchors.bottom
+            anchors.bottomMargin: -25
+            anchors.horizontalCenter: drone.horizontalCenter
+            width: 1
+            height: 1
+            color: "transparent"
+            //border.color: "black"
+            //border.width: 1
+        }
+        Rectangle{
+            visible: _windDisp
+            z: 10
+
             id: headingAnchors
             anchors.verticalCenter: drone.verticalCenter
             anchors.horizontalCenter: drone.horizontalCenter
             width: drone_center.width * 2.5
-            height: drone_center.height * 2.75
+            height: drone_center.height * 1.75
             color: "transparent"
             //border.color: "black"
             //border.width: 1
@@ -1246,6 +1273,7 @@ FlightMap {
 //                    y: windArrowPath_top.y
 //                    rotation: windArrowPath_top.angle
 //                }
+
         function getGroundSpeed(){
             if(drone.groundSpeed >= 10){
                 return drone.groundSpeed.toFixed(0);
@@ -1263,26 +1291,56 @@ FlightMap {
             }
         }
         function getWindIndicatorWidth(){
-                return 2 * (5 - windSpeed.toFixed(0));
+                return 25 + 10 * windSpeed.toFixed(0);
         }
         function getTravelIndicatorWidth(){
-                return 2 * (5 - drone.groundSpeed.toFixed(0));
+                return 25 + 10 * drone.groundSpeed.toFixed(0);
+        }
+        function travelOnTop(){
+            if(_activeVehicle){
+                if(drone.get_tdir_angle() < 45 || drone.get_tdir_angle() > 315){
+                    return 0
+                }
+                else if(drone.get_tdir_angle() < 135 || drone.get_tdir_angle() > 45){
+                    return 1
+                }
+                else if(drone.get_tdir_angle() < 225 || drone.get_tdir_angle() > 135){
+                    return 2
+                }
+                else if(drone.get_tdir_angle() < 315 || drone.get_tdir_angle() > 225){
+                    return 3
+                }
+            }
+            else{
+                return -1
+            }
+        }
+
+        Rectangle{
+            id: windIndicatorGhost
+            visible: false
+            color: "blue"
+            x: drone.get_travel_x()
+            y: drone.get_travel_y()
+            rotation:  drone.get_travel_angle()
+            width: (drone.width / 1.125)
+            height: width - 10
         }
         Image{
-
-            id: travelDirectionIndicator
-            visible: _activeVehicle ? _windDisp:false
+            id: _windDirectionIndicator
+            visible: _windDisp// &&  drone.travelOnTop() === 0
             source: "/qmlimages/blue_arrow.png"
             z: 10000
             Text {
-                anchors.bottom: travelDirectionIndicator_anchors2.bottom
+                anchors.top: parent.bottom
+                anchors.topMargin: -2.5
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible:                true
                 text: _activeVehicle ? drone.getWindHeadingDisplay() + '°' : '--.--'
                 font.pointSize: 8
             }
             Text {
-                anchors.top: travelDirectionIndicator_anchors.bottom
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 4
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
                 text: _activeVehicle ? drone._getWindSpeed() : ''
@@ -1290,44 +1348,61 @@ FlightMap {
                 font.pointSize: 10
                 font.bold: true
             }
-            width: drone.width / 1.125
-            height: width - drone.getWindIndicatorWidth()
-            x: drone.get_travel_x()
-            y: drone.get_travel_y()
-            rotation:  drone.get_travel_angle()
-            Rectangle{
-                z: 10
+            width: drone.width / 1.5
+            height: drone.getWindIndicatorWidth()
+            anchors.bottom: windIndicatorGhost.bottom
+            //anchors.right: travelIndicatorGhost2.right
+            //anchors.left: travelIndicatorGhost3.left
+            rotation: drone.get_travel_angle()
+        }
 
-                id: travelDirectionIndicator_anchors
-                width: travelDirectionIndicator.width
-                height: travelDirectionIndicator.height / 6
-                visible: false
-                color: 'red'
-            }
-            Rectangle{
-                z: 10
-
-                id: travelDirectionIndicator_anchors2
-                width: travelDirectionIndicator.width / 6
-                height: travelDirectionIndicator.height * 1.05
-                visible: false
-                color: 'red'
-            }
+        Rectangle{
+            id: travelIndicatorGhost
+            z: 100000
+            visible: false
+            color: "yellow"
+            x: drone.get_tdir_x()
+            y: drone.get_tdir_y()
+            rotation: drone.get_tdir_angle()
+            width: 10
+            height: 10
+        }
+        Rectangle{
+            id: travelIndicatorGhost2
+            z: 100000
+            visible: false
+            color: "green"
+            x: drone.get_tdir_x_2()
+            y: drone.get_tdir_y_2()
+            rotation: drone.get_tdir_angle()
+            width: 10
+            height: 10
+        }
+        Rectangle{
+            id: travelIndicatorGhost3
+            z: 100000
+            visible: false
+            color: "red"
+            x: drone.get_tdir_x_3()
+            y: drone.get_tdir_y_3()
+            rotation: drone.get_tdir_angle()
+            width: 10
+            height: 10
         }
         Image{
             id: _travelDirectionIndicator
-            visible: _activeVehicle ? _windDisp: false
+            visible: _windDisp// &&  drone.travelOnTop() === 0
             source: "/qmlimages/white_arrow.png"
             z: 10000
             Text {
-                anchors.bottom: _travelDirectionIndicator_anchors.bottom
+                anchors.bottom: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
-                visible:                true
                 text: _activeVehicle ? drone.getTravelHeadingDisplay() + '°' : '--.--'
                 font.pointSize: 8
             }
             Text {
-                anchors.bottom: _travelDirectionIndicator_anchors2.bottom
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 4
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
                 text: _activeVehicle ? drone.getGroundSpeed() : ''
@@ -1335,29 +1410,80 @@ FlightMap {
                 font.pointSize: 10
                 font.bold: true
             }
-            width: drone.width / 1.125
-            height: width - drone.getTravelIndicatorWidth()
-            x: drone.get_tdir_x()
-            y: drone.get_tdir_y()
-            rotation: drone.get_tdir_angle()
-            Rectangle{
-                id: _travelDirectionIndicator_anchors
-                width: _travelDirectionIndicator.width
-                height: _travelDirectionIndicator.height / 30
-                visible: false
-                color: 'red'
-                z: 10
 
-            }
-            Rectangle{
-                id: _travelDirectionIndicator_anchors2
-                width: _travelDirectionIndicator.width / 6
-                height: _travelDirectionIndicator.height * .85
-                visible: false
-                color: 'blue'
-                z: 10
-
-            }
+            width: drone.width / 1.5
+            height: drone.getTravelIndicatorWidth()
+            x: travelIndicatorGhost.x
+            y: travelIndicatorGhost.y
+            rotation: travelIndicatorGhost.rotation
+//            states:[
+//                State {
+//                    name: "0"; when: drone.travelOnTop() === 0
+//                    PropertyChanges{target: _travelDirectionIndicator; rotation: 0}
+//                },
+//                State {
+//                    name: "1"; when: drone.travelOnTop() === 1
+//                    PropertyChanges{target: _travelDirectionIndicator; rotation: 90}
+//                },
+//                State {
+//                    name: "2"; when: drone.travelOnTop() === 2
+//                    PropertyChanges{target: _travelDirectionIndicator; rotation: 180}
+//                },
+//                State {
+//                    name: "3"; when: drone.travelOnTop() === 3
+//                    PropertyChanges{target: _travelDirectionIndicator; rotation: 270}
+//                }
+//            ]
+//            transitions:[
+//                Transition{
+//                    from: "0"; to: "1"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Clockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "1"; to: "2"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Clockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "2"; to: "3"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Clockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "3"; to: "0"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Clockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "1"; to: "0"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Counterclockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "2"; to: "1"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Counterclockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "3"; to: "2"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Counterclockwise }
+//                    }
+//                },
+//                Transition{
+//                    from: "0"; to: "3"; reversible: false
+//                    ParallelAnimation{
+//                        RotationAnimation { duration: 500; direction: RotationAnimation.Counterclockwise }
+//                    }
+//                }
+//            ]
         }
 
 
@@ -1433,6 +1559,18 @@ FlightMap {
         function get_tdir_angle(){
             return travelDirection_circ.angle;
         }
+        function get_tdir_x_2(){
+            return travelDirection_circ_2.x;
+        }
+        function get_tdir_y_2(){
+            return travelDirection_circ_2.y;
+        }
+        function get_tdir_x_3(){
+            return travelDirection_circ_3.x;
+        }
+        function get_tdir_y_3(){
+            return travelDirection_circ_3.y;
+        }
 
         PathInterpolator {
             id: travelArrow_circ
@@ -1451,54 +1589,110 @@ FlightMap {
             }
             //NumberAnimation on progress { from: 0; to: 1; duration: 90000 }
 
-            progress: (drone.getHeadingDisplay() / drone.fifthBreak_360 )
+            progress: (drone.getWindHeadingDisplay() / drone.fifthBreak_360 )
         }
         PathInterpolator {
             id: travelDirection_circ
             path: Path {
-                startX: headingAnchors.x + headingAnchors.radius / 1.75; startY: headingAnchors.y - headingAnchors.radius / 4
+                startX: headingAnchorsStart.x - drone.width / 3; startY: headingAnchorsStart.y - 50
                 PathArc {
-                    x: headingAnchors.x + headingAnchors.radius / 1.75; y: headingAnchors.y + 2.5 * headingAnchors.radius
-                    radiusX: headingAnchors.radius / 1.5; radiusY: headingAnchors.radius / 1.5
+                    x: headingAnchorsStart.x - drone.width / 3; y: headingAnchorsEnd.y + 50
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
                     direction: PathArc.Clockwise
                 }
                 PathArc {
-                    x: headingAnchors.x + headingAnchors.radius / 1.75; y: headingAnchors.y - headingAnchors.radius / 4
-                    radiusX: headingAnchors.radius / 1.5; radiusY: headingAnchors.radius / 1.5
+                    x: headingAnchorsStart.x - drone.width / 3; y: headingAnchorsStart.y - 50
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
                     direction: PathArc.Clockwise
                 }
             }
-            //NumberAnimation on progress { from: 1; to: 0; duration: 90000 }
+            //NumberAnimation on progress { from: 1; to: 0; duration: 10000 }
 
-            progress: ((360 - drone.getHeadingDisplay()) / drone.fifthBreak_360 )
+            progress: (drone.getHeadingDisplay() / drone.fifthBreak_360 )
         }
+        function getProgressTrav_2(){
+            if(travelDirection_circ.progress + .025 > 1.0){
+                return ((travelDirection_circ.progress + .025) - 1.0)
+            }
+            else{
+                return travelDirection_circ.progress + .025
+            }
+        }
+
         PathInterpolator {
-            id: travelArrowPath_top
+            id: travelDirection_circ_2
             path: Path {
-                startX: headingAnchors.x - 100; startY: headingAnchors.y
+                startX: headingAnchorsStart.x; startY: headingAnchorsStart.y - 15
                 PathArc {
-                    x: headingAnchors.x - 25 + 2 * radiusX; y: headingAnchors.y
-                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 1.25
+                    x: headingAnchorsStart.x; y: headingAnchorsEnd.y + 15
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
+                    direction: PathArc.Clockwise
+                }
+                PathArc {
+                    x: headingAnchorsStart.x; y: headingAnchorsStart.y - 15
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
                     direction: PathArc.Clockwise
                 }
             }
-            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+            //NumberAnimation on progress { from: 1; to: 0; duration: 10000 }
 
-            progress: (drone.getHeadingDisplay() - drone.firstBreak)/ (drone.secondBreak - drone.firstBreak)
+            progress: drone.getProgressTrav_2()
         }
+        function getProgressTrav_3(){
+            if(.975 + travelDirection_circ.progress > 1.0){
+                return ((travelDirection_circ.progress + .975) - 1.0)
+            }
+            else{
+                return travelDirection_circ.progress + .975
+            }
+        }
+
         PathInterpolator {
-            id: travelArrowPath_right
+            id: travelDirection_circ_3
             path: Path {
-                startX: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25; startY: headingAnchors.y
-                PathLine{
-                    x: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25
-                    y: - headingAnchors.y
+                startX: headingAnchorsStart.x; startY: headingAnchorsStart.y - 15
+                PathArc {
+                    x: headingAnchorsStart.x; y: headingAnchorsEnd.y + 15
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
+                    direction: PathArc.Clockwise
+                }
+                PathArc {
+                    x: headingAnchorsStart.x; y: headingAnchorsStart.y - 15
+                    radiusX: headingAnchors.radius; radiusY: headingAnchors.radius
+                    direction: PathArc.Clockwise
                 }
             }
-            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+            //NumberAnimation on progress { from: 1; to: 0; duration: 10000 }
 
-            progress: (drone.getHeadingDisplay() - drone.secondBreak)/ (drone.thirdBreak - drone.secondBreak)
+            progress: drone.getProgressTrav_3()
         }
+//        PathInterpolator {
+//            id: travelArrowPath_top
+//            path: Path {
+//                startX: headingAnchors.x - 100; startY: headingAnchors.y
+//                PathArc {
+//                    x: headingAnchors.x - 25 + 2 * radiusX; y: headingAnchors.y
+//                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 1.25
+//                    direction: PathArc.Clockwise
+//                }
+//            }
+//            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+
+//            progress: (drone.getHeadingDisplay() - drone.firstBreak)/ (drone.secondBreak - drone.firstBreak)
+//        }
+//        PathInterpolator {
+//            id: travelArrowPath_right
+//            path: Path {
+//                startX: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25; startY: headingAnchors.y
+//                PathLine{
+//                    x: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25
+//                    y: - headingAnchors.y
+//                }
+//            }
+//            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+
+//            progress: (drone.getHeadingDisplay() - drone.secondBreak)/ (drone.thirdBreak - drone.secondBreak)
+//        }
 //                Timer {
 //                    interval:       1
 //                    running:        true
@@ -1531,64 +1725,64 @@ FlightMap {
 
 //                    progress: left_side_progress / (drone.firstBreak + (360 - drone.fourthBreak))
 //                }
-        PathInterpolator {
-            id: travelArrowPath_left
-            path: Path {
-                startX: headingAnchors.x - 100; startY: -headingAnchors.y
-                PathLine{
-                    x: headingAnchors.x - 100
-                    y: headingAnchors.y * (57 / 90) //ratio
-                }
-            }
+//        PathInterpolator {
+//            id: travelArrowPath_left
+//            path: Path {
+//                startX: headingAnchors.x - 100; startY: -headingAnchors.y
+//                PathLine{
+//                    x: headingAnchors.x - 100
+//                    y: headingAnchors.y * (57 / 90) //ratio
+//                }
+//            }
 
-            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+//            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
 
-            progress: (drone.getHeadingDisplay() - drone.fourthBreak)/ (drone.fifthBreak_360 - drone.fourthBreak)
-        }
-        PathInterpolator {
-            id: travelArrowPath_left_0_plus
+//            progress: (drone.getHeadingDisplay() - drone.fourthBreak)/ (drone.fifthBreak_360 - drone.fourthBreak)
+//        }
+//        PathInterpolator {
+//            id: travelArrowPath_left_0_plus
 
-            path: Path {
-                startX: headingAnchors.x - 100; startY: headingAnchors.y * (57 / 90)
-                PathLine{
-                    x: headingAnchors.x - 100
-                    y: headingAnchors.y
-                }
-            }
+//            path: Path {
+//                startX: headingAnchors.x - 100; startY: headingAnchors.y * (57 / 90)
+//                PathLine{
+//                    x: headingAnchors.x - 100
+//                    y: headingAnchors.y
+//                }
+//            }
 
-            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+//            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
 
-            progress: (drone.getHeadingDisplay())/ (drone.firstBreak)
-        }
+//            progress: (drone.getHeadingDisplay())/ (drone.firstBreak)
+//        }
 
-        PathInterpolator {
-            id: travelArrowPath_bottom
-            path: Path {
-                startX: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25; startY: -headingAnchors.y
-                PathArc {
-                    x: headingAnchors.x - 100; y: -headingAnchors.y
-                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 1.5
-                    direction: PathArc.Clockwise
-                }
-            }
-            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
+//        PathInterpolator {
+//            id: travelArrowPath_bottom
+//            path: Path {
+//                startX: headingAnchors.x - 25 + 2 * headingAnchors.radius * 1.25; startY: -headingAnchors.y
+//                PathArc {
+//                    x: headingAnchors.x - 100; y: -headingAnchors.y
+//                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 1.5
+//                    direction: PathArc.Clockwise
+//                }
+//            }
+//            //NumberAnimation on progress { from: 0; to: 1; duration: 20000 }
 
-            progress: (drone.getHeadingDisplay() - drone.thirdBreak)/ (drone.fourthBreak - drone.thirdBreak)
-        }
-        PathInterpolator {
-            id: windArrowPath_top
-            path: Path {
-                startX: headingAnchors.x - 25; startY: headingAnchors.y
+//            progress: (drone.getHeadingDisplay() - drone.thirdBreak)/ (drone.fourthBreak - drone.thirdBreak)
+//        }
+//        PathInterpolator {
+//            id: windArrowPath_top
+//            path: Path {
+//                startX: headingAnchors.x - 25; startY: headingAnchors.y
 
-                PathArc {
-                    x: headingAnchors.x - 100 + 2 * radiusX; y: headingAnchors.y
-                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 2
-                    direction: PathArc.Clockwise
-                }
-            }
+//                PathArc {
+//                    x: headingAnchors.x - 100 + 2 * radiusX; y: headingAnchors.y
+//                    radiusX: headingAnchors.radius * 1.25; radiusY: headingAnchors.radius / 2
+//                    direction: PathArc.Clockwise
+//                }
+//            }
 
-            NumberAnimation on progress { loops: 20; from: 0; to: 1;  duration: 20000 }
-        }
+//            NumberAnimation on progress { loops: 20; from: 0; to: 1;  duration: 20000 }
+//        }
         Rectangle {
             visible: _droneDisp
             z: 10
@@ -2952,3 +3146,4 @@ FlightMap {
     }
 
 }
+
