@@ -307,10 +307,6 @@ public:
     Q_PROPERTY(Fact* servoRaw2          READ servoRaw2          CONSTANT)
     Q_PROPERTY(Fact* servoRaw3          READ servoRaw3          CONSTANT)
     Q_PROPERTY(Fact* servoRaw4          READ servoRaw4          CONSTANT)
-    Q_PROPERTY(Fact* pwm1               READ pwm1               CONSTANT)
-    Q_PROPERTY(Fact* pwm2               READ pwm2               CONSTANT)
-    Q_PROPERTY(Fact* pwm3               READ pwm3               CONSTANT)
-    Q_PROPERTY(Fact* pwm4               READ pwm4               CONSTANT)
     Q_PROPERTY(Fact* battery            READ battery            CONSTANT)
     //CUSTOM
     Q_PROPERTY(FactGroup*           gps             READ gpsFactGroup               CONSTANT)
@@ -662,10 +658,6 @@ public:
     Fact* servoRaw2                         () { return &_servoRaw2Fact; }
     Fact* servoRaw3                         () { return &_servoRaw3Fact; }
     Fact* servoRaw4                         () { return &_servoRaw4Fact; }
-    Fact* pwm1                              () { return &_pwm1Fact; }
-    Fact* pwm2                              () { return &_pwm2Fact; }
-    Fact* pwm3                              () { return &_pwm3Fact; }
-    Fact* pwm4                              () { return &_pwm4Fact; }
     Fact* battery                           () { return &_batteryFact; }
     //CUSTOM
     FactGroup* gpsFactGroup                 () { return &_gpsFactGroup; }
@@ -863,6 +855,12 @@ public slots:
     QVariant getSetpointRoll                    ();
     QVariant getSetpointPitch                   ();
     QVariant getSetpointYaw                     ();
+    QVariant getWindDirection                   ();
+    QVariant getWindSpeed                       ();
+    QVariant getRpm1                            ();
+    QVariant getRpm2                            ();
+    QVariant getRpm3                            ();
+    QVariant getRpm4                            ();
     //CUSTOM
 signals:
     void coordinateChanged              (QGeoCoordinate coordinate);
@@ -1338,10 +1336,6 @@ private:
     Fact _servoRaw2Fact;
     Fact _servoRaw3Fact;
     Fact _servoRaw4Fact;
-    Fact _pwm1Fact;
-    Fact _pwm2Fact;
-    Fact _pwm3Fact;
-    Fact _pwm4Fact;
     Fact _batteryFact;
     //CUSTOM
     VehicleGPSFactGroup             _gpsFactGroup;
@@ -1400,10 +1394,6 @@ private:
     static const char* _servoRaw2FactName;
     static const char* _servoRaw3FactName;
     static const char* _servoRaw4FactName;
-    static const char* _pwm1FactName;
-    static const char* _pwm2FactName;
-    static const char* _pwm3FactName;
-    static const char* _pwm4FactName;
     static const char* _batteryFactName;
     //CUSTOM
     static const char* _gpsFactGroupName;
@@ -1429,3 +1419,4 @@ private:
 };
 
 Q_DECLARE_METATYPE(Vehicle::MavCmdResultFailureCode_t)
+
