@@ -1323,7 +1323,7 @@ FlightMap {
                 anchors.bottom: _travelDirectionIndicator_anchors.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 visible:                true
-                text: _activeVehicle ? drone.getTravelHeadingDisplay() + '°' : '--.--'
+                text: _activeVehicle ? _activeVehicle.getCog() + '°' : '--.--'
                 font.pointSize: 8
             }
             Text {
