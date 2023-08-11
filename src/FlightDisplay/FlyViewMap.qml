@@ -1305,7 +1305,7 @@ FlightMap {
                 font.bold: true
             }
             width: drone.width / 1.125
-            height: width - drone.getWindIndicatorWidth()
+            height: 100//width - drone.getWindIndicatorWidth()
             x: drone.get_travel_x()
             y: drone.get_travel_y()
             rotation:  drone.get_travel_angle()
@@ -1350,7 +1350,7 @@ FlightMap {
                 font.bold: true
             }
             width: drone.width / 1.125
-            height: width - drone.getTravelIndicatorWidth()
+            height: 100//width - drone.getTravelIndicatorWidth()
             x: drone.get_tdir_x()
             y: drone.get_tdir_y()
             rotation: drone.get_tdir_angle()
