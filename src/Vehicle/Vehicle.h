@@ -861,6 +861,7 @@ public slots:
     QVariant getRpm2                            ();
     QVariant getRpm3                            ();
     QVariant getRpm4                            ();
+    QVariant getCog                             ();
     //CUSTOM
 signals:
     void coordinateChanged              (QGeoCoordinate coordinate);
