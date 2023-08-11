@@ -1465,7 +1465,7 @@ FlightMap {
             }
             //NumberAnimation on progress { from: 0; to: 1; duration: 90000 }
 
-            progress: (drone.getHeadingDisplay() / drone.fifthBreak_360 )
+            progress: (drone.getWindHeadingDisplay() / drone.fifthBreak_360 )
         }
         PathInterpolator {
             id: travelDirection_circ
@@ -1484,7 +1484,7 @@ FlightMap {
             }
             //NumberAnimation on progress { from: 1; to: 0; duration: 90000 }
 
-            progress: ((360 - drone.getHeadingDisplay()) / drone.fifthBreak_360 )
+            progress: (drone.getCogDisplay() / drone.fifthBreak_360 )
         }
         PathInterpolator {
             id: travelArrowPath_top
